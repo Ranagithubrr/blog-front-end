@@ -1,7 +1,11 @@
+import ProtectedRoute from "@/components/ProtectedRoute";
+
 export default function Home() {
   return (
-    <div>
-      welcome
-    </div>
+    <ProtectedRoute>
+      <div>
+        welcome
+      </div>
+    </ProtectedRoute>
   );
 }
