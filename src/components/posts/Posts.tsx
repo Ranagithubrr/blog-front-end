@@ -8,9 +8,9 @@ export default async function PostsList() {
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold mb-6">Latest Posts</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {posts.map((post) => (
+                {posts.map((post, index) => (
                     <div
-                        key={post.id}
+                       key={post.id || index}
                         className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
                     >
                         <img src={post.thumbnail} alt={post.title} className="w-full h-40 object-cover" />
