@@ -7,6 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 import { loginUser } from "@/services/auth.service";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/providers/AuthProvider";
 
 const LoginSchema = z.object({
     email: z.string().email({ message: "Invalid email" }),
@@ -17,6 +18,7 @@ type LoginFormType = z.infer<typeof LoginSchema>;
 
 export default function LoginPage() {
     const router = useRouter();
+    const { login } = useAuth();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const { register, handleSubmit, formState: { errors } } = useForm({
@@ -25,10 +27,11 @@ export default function LoginPage() {
 
     const { mutate, isPending } = useMutation({
         mutationFn: loginUser,
-        onSuccess: (data: any) => {        
+        onSuccess: (data: any) => {
             localStorage.setItem("token", data.access_token);
             localStorage.setItem("user", JSON.stringify(data.user));
-            
+
+            login(data.access_token, data.user);
             router.push("/");
         },
         onError: (err: any) => {
