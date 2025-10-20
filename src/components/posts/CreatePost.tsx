@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FieldError, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { createPost } from "@/services/post.service";
 import { useAuth } from "@/providers/AuthProvider";
+import { useRouter } from "next/navigation";
 
 // Zod validation
 const PostSchema = z.object({
@@ -17,41 +18,56 @@ const PostSchema = z.object({
     .max(1000),
   image: z
     .any()
-    .refine((file) => file?.[0]?.size <= 5_000_000, "Max file size 5MB")
-    .optional(),
+    .refine((file) => file && file.length > 0, "Image is required")
+    .refine((file) => file?.[0]?.size <= 5_000_000, "Max file size 5MB"),
 });
 
 type PostFormType = z.infer<typeof PostSchema>;
 
 const CreatePost = () => {
   const { user } = useAuth();
+  const router = useRouter();
   const [imageUrl, setImageUrl] = useState<string>("");
+  const [preview, setPreview] = useState<string>("");
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<PostFormType>({
     resolver: zodResolver(PostSchema),
   });
 
   const { mutate, isPending } = useMutation({
     mutationFn: createPost,
-    onSuccess: (data) => {
-      console.log("Post created successfully:", data);
+    onSuccess: () => {
+      router.push("/"); // redirect to home
     },
     onError: (error) => {
       console.error("Error creating post:", error);
     },
   });
 
+  // Watch image input for preview
+  const imageFile = watch("image");
+  useEffect(() => {
+    if (imageFile && imageFile.length > 0) {
+      const file = imageFile[0];
+      const objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl);
+
+      return () => URL.revokeObjectURL(objectUrl);
+    } else {
+      setPreview("");
+    }
+  }, [imageFile]);
+
   // Upload image to S3
   const uploadImageToS3 = async (file: File) => {
-    // 1. Get presigned URL from your backend
     const presignedRes = await fetch("/api/s3-presigned-url?fileName=" + file.name);
-    const { url, key } = await presignedRes.json(); // backend returns { url, key }
+    const { url, key } = await presignedRes.json();
 
-    // 2. Upload file to S3 using the presigned URL
     await fetch(url, {
       method: "PUT",
       headers: {
@@ -60,7 +76,6 @@ const CreatePost = () => {
       body: file,
     });
 
-    // 3. Return the public URL (or key) for storing in DB
     const publicUrl = `https://blog-bucketname.s3.amazonaws.com/${key}`;
     return publicUrl;
   };
@@ -114,12 +129,49 @@ const CreatePost = () => {
 
         {/* Image */}
         <div>
-          <input type="file" {...register("image")} accept="image/*" />
+          <div className="flex flex-col">
+            <label
+              htmlFor="image"
+              className="cursor-pointer flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-md p-4 text-gray-500 hover:border-blue-500 hover:text-blue-500 transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 15a4 4 0 014-4h10a4 4 0 014 4v4a4 4 0 01-4 4H7a4 4 0 01-4-4v-4z"
+                />
+              </svg>
+              <span>Click to upload an image</span>
+            </label>
+            <input
+              id="image"
+              type="file"
+              {...register("image")}
+              accept="image/*"
+              className="hidden"
+            />
+          </div>
+
+          {/* Preview */}
+          {preview && (
+            <div className="w-full h-full border rounded-md overflow-hidden mt-2">
+              <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+            </div>
+          )}
+
           {errors.image && (errors.image as FieldError).message && (
             <p className="text-red-500 text-sm mt-1">
               {(errors.image as FieldError).message}
             </p>
           )}
+
           {imageUrl && <p className="text-green-500 mt-1">Image uploaded!</p>}
         </div>
 
