@@ -21,7 +21,9 @@ const Header = () => {
         {/* Navigation */}
         <nav className="hidden md:flex gap-6 text-gray-700 font-medium">
           <Link href="/" className="hover:text-blue-600 transition">Home</Link>
-          <Link href="/posts" className="hover:text-blue-600 transition">Posts</Link>
+          {isLoggedIn &&
+            <Link href="/my-posts" className="hover:text-blue-600 transition">My Posts</Link>
+          }
           <Link href="/about" className="hover:text-blue-600 transition">About</Link>
         </nav>
 
