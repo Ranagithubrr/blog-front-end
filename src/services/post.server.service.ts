@@ -15,14 +15,37 @@ export const getAllPosts = async (): Promise<Post[]> => {
 
     if (!res.ok) {
       console.warn(`Failed to fetch posts: ${res.status} ${res.statusText}`);
-      return []; 
+      return [];
     }
 
     const data = await res.json();
     return data;
   } catch (error) {
     console.error("Error fetching posts:", error);
-    return []; 
+    return [];
+  }
+};
+
+
+export const getAllPostsByUser = async (token: string): Promise<Post[]> => {
+  try {
+    const res = await fetch("http://localhost:5000/post/user", {
+      cache: "no-store",
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      console.warn(`Failed to fetch posts: ${res.status} ${res.statusText}`);
+      return [];
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    return [];
   }
 };
 
