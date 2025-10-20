@@ -8,11 +8,21 @@ export interface Post {
 }
 
 export const getAllPosts = async (): Promise<Post[]> => {
-  const res = await fetch("http://localhost:5000/post", {
-    cache: "no-store", // ensures fresh data every request
-  });
+  try {
+    const res = await fetch("http://localhost:5000/post", {
+      cache: "no-store",
+    });
 
-  if (!res.ok) throw new Error("Failed to fetch posts");
+    if (!res.ok) {
+      console.warn(`Failed to fetch posts: ${res.status} ${res.statusText}`);
+      return []; 
+    }
 
-  return res.json();
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    return []; 
+  }
 };
+
