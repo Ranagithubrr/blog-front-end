@@ -85,7 +85,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ postId }) => {
 
   // Upload image to S3
   const uploadImageToS3 = async (file: File) => {
-    const presignedRes = await fetch("/api/s3-presigned-url?fileName=" + file.name);
+    const presignedRes = await fetch("/api/s3-presigned-url?fileName=" + encodeURIComponent(file.name));
     const { url, key } = await presignedRes.json();
 
     await fetch(url, {
@@ -105,6 +105,14 @@ const CreatePost: React.FC<CreatePostProps> = ({ postId }) => {
       : (data: any) => createPost(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      reset({
+        title: "",
+        description: "",
+        image: undefined,
+      });
+      setImageUrl("");
+      setPreview("");
       router.push("/my-posts");
     },
     onError: (error) => {
@@ -126,7 +134,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ postId }) => {
     const payload: any = {
       title: data.title,
       description: data.description,
-      thumbnail: uploadedImage,
+      thumbnail: encodeURI(uploadedImage),
     };
 
     if (!postId) {
