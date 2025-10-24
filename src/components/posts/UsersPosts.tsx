@@ -4,27 +4,17 @@ import { getAllPostsByUser, Post } from "@/services/post.server.service";
 import Image from "next/image";
 import { FiEdit, FiTrash2 } from "react-icons/fi"; // react-icons
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 
 const UsersPosts = () => {
-    const [posts, setPosts] = useState<Post[]>([]);
+    const token = localStorage.getItem("token") || "";
 
-    useEffect(() => {
-        const token = localStorage.getItem("token") || "";
-        if (!token) return;
+    const { data: posts = [] } = useQuery<Post[]>({
+        queryKey: ["userPosts"],
+        queryFn: () => getAllPostsByUser(token),
+        enabled: !!token,
+    });
 
-        const fetchPosts = async () => {
-            const data = await getAllPostsByUser(token);
-            setPosts(data);
-        };
-        fetchPosts();
-    }, []);
-
-
-    const handleDelete = (postId: string) => {
-        console.log("Delete post:", postId);
-        // call delete API and remove from state
-        setPosts(prev => prev.filter(post => post.id !== postId));
-    };
 
     return (
         <div className="w-full max-w-5xl mx-auto py-12 px-4">
@@ -43,7 +33,7 @@ const UsersPosts = () => {
                                 <FiEdit size={20} />
                             </Link>
                             <button
-                                onClick={() => handleDelete(post.id)}
+                                // onClick={() => handleDelete(post.id)}
                                 className="cursor-pointer text-red-600 hover:text-red-800 transition"
                             >
                                 <FiTrash2 size={20} />

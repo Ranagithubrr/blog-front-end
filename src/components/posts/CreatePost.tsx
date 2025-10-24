@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { FieldError, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createPost, getSinglePost, updatePost } from "@/services/post.service";
 import { useAuth } from "@/providers/AuthProvider";
 import { useRouter } from "next/navigation";
@@ -39,6 +39,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ postId }) => {
   const router = useRouter();
   const [imageUrl, setImageUrl] = useState<string>("");
   const [preview, setPreview] = useState<string>("");
+  const queryClient = useQueryClient();
 
   // Initialize form
   const {
@@ -103,6 +104,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ postId }) => {
       ? (data: any) => updatePost(postId, data)
       : (data: any) => createPost(data),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userPosts"] });
       router.push("/my-posts");
     },
     onError: (error) => {
