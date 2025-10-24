@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "https://15.206.27.201:5000/",
+    baseURL: process.env.NEXT_PUBLIC_API_URL || "https://15.206.27.201",
     withCredentials: false,
 });
 
