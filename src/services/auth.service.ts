@@ -6,7 +6,6 @@ interface UserInterface {
   phone: string;
   password: string;
   role: string;
-  authorId?: string;
 }
 
 export const registerUser = async (payload: UserInterface) => {

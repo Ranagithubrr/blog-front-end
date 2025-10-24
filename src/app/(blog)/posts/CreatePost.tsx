@@ -45,6 +45,7 @@ interface CreatePayload {
 
 const CreatePost: React.FC<CreatePostProps> = ({ postId }) => {
   const { user } = useAuth();
+  console.log("Authenticated user:", user);
   const router = useRouter();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
