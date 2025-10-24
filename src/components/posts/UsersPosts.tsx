@@ -4,16 +4,44 @@ import { getAllPostsByUser, Post } from "@/services/post.server.service";
 import Image from "next/image";
 import { FiEdit, FiTrash2 } from "react-icons/fi"; // react-icons
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { deletePost } from "@/services/post.service";
 
 const UsersPosts = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [postIdToDelete, setPostIdToDelete] = useState<string | null>(null);
+
+    const onClose = () => {
+        setIsModalOpen(false);
+        setPostIdToDelete(null);
+    };
+
     const token = localStorage.getItem("token") || "";
+    const queryClient = useQueryClient();
 
     const { data: posts = [] } = useQuery<Post[]>({
         queryKey: ["userPosts"],
         queryFn: () => getAllPostsByUser(token),
         enabled: !!token,
     });
+
+    const { mutate } = useMutation({
+        mutationFn: (postId: string) => deletePost(postId),
+        onSuccess: () => {
+            setIsModalOpen(false);
+            setPostIdToDelete(null);
+            queryClient.invalidateQueries({ queryKey: ["posts"] });    
+            queryClient.invalidateQueries({ queryKey: ["userPosts"] });
+        },
+        onError: (error) => {
+            console.error("Failed to delete post:", error);
+        },
+    });
+
+    const handleDelete = (postId: string) => {
+        setIsModalOpen(true);
+        setPostIdToDelete(postId);
+    }
 
 
     return (
@@ -33,7 +61,7 @@ const UsersPosts = () => {
                                 <FiEdit size={20} />
                             </Link>
                             <button
-                                // onClick={() => handleDelete(post.id)}
+                                onClick={() => handleDelete(post.id)}
                                 className="cursor-pointer text-red-600 hover:text-red-800 transition"
                             >
                                 <FiTrash2 size={20} />
@@ -78,6 +106,37 @@ const UsersPosts = () => {
                     </div>
                 ))}
             </div>
+            {/* delete modal */}
+            {isModalOpen && (
+                <div
+                    className="h-screen w-screen bg-gray-800/80 fixed z-40 flex items-center justify-center top-0 left-0"
+                    onClick={() => setIsModalOpen(false)}
+                >
+                    <div
+                        className="bg-white rounded-xl shadow-lg w-96 p-6 z-50"
+                        onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside modal
+                    >
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Confirm Delete</h2>
+                        <p className="text-gray-600 mb-6">Are you sure you want to delete this item?</p>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={onClose}
+                                className="cursor-pointer px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => mutate(postIdToDelete!)}
+                                className="cursor-pointer px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

@@ -1,9 +1,14 @@
+"use client"
 import React from "react";
 import { getAllPosts, Post } from "@/services/post.server.service";
 import Image from "next/image";
+import { useQuery } from "@tanstack/react-query";
 
-export default async function PostsList() {
-    const posts: Post[] = await getAllPosts();
+const PostsList = () => {
+    const { data: posts = [] } = useQuery<Post[]>({
+        queryKey: ["posts"],
+        queryFn: () => getAllPosts(),
+    });
 
     return (
         <div className="w-full max-w-5xl mx-auto py-12 px-4">
@@ -57,3 +62,5 @@ export default async function PostsList() {
         </div>
     );
 }
+
+export default PostsList;
