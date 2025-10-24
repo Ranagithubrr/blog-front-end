@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createPost, getSinglePost, updatePost } from "@/services/post.service";
 import { useAuth } from "@/providers/AuthProvider";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 // Zod validation
 const CreatePostSchema = z.object({
@@ -32,6 +33,14 @@ type PostFormType = z.infer<typeof CreatePostSchema> | z.infer<typeof EditPostSc
 
 interface CreatePostProps {
   postId?: string;
+}
+
+interface CreatePayload {
+  title: string,
+  description: string,
+  thumbnail: string,
+  author?: string,
+  authorId?: string,
 }
 
 const CreatePost: React.FC<CreatePostProps> = ({ postId }) => {
@@ -101,8 +110,8 @@ const CreatePost: React.FC<CreatePostProps> = ({ postId }) => {
   // Mutation for create/update
   const { mutate, isPending } = useMutation({
     mutationFn: postId
-      ? (data: any) => updatePost(postId, data)
-      : (data: any) => createPost(data),
+      ? (data: CreatePayload) => updatePost(postId, data)
+      : (data: CreatePayload) => createPost(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["userPosts"] });
       queryClient.invalidateQueries({ queryKey: ["posts"] });
@@ -131,7 +140,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ postId }) => {
       setImageUrl(uploadedImage);
     }
 
-    const payload: any = {
+    const payload: CreatePayload = {
       title: data.title,
       description: data.description,
       thumbnail: encodeURI(uploadedImage),
@@ -214,7 +223,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ postId }) => {
           {/* Preview */}
           {preview && (
             <div className="w-full h-full border rounded-md overflow-hidden mt-2">
-              <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+              <Image height={500} width={500} src={preview} alt="Preview" className="w-full h-full object-cover" />
             </div>
           )}
 

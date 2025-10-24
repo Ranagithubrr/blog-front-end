@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { getAllPostsByUser, Post } from "@/services/post.server.service";
 import Image from "next/image";
 import { FiEdit, FiTrash2 } from "react-icons/fi"; // react-icons
