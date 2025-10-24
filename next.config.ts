@@ -5,9 +5,17 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**", 
+        hostname: "**", // allow all HTTPS images
       },
     ],
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",             // frontend path
+        destination: "http://15.206.27.201/:path*", // backend HTTP
+      },
+    ];
   },
 };
 
