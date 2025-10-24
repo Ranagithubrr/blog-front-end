@@ -16,7 +16,7 @@ interface PostResponse {
   createdAt: string;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://15.206.27.201:5000/";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://15.206.27.201";
 
 export const getAllPosts = async (): Promise<Post[]> => {
   try {
