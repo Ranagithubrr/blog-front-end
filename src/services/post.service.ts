@@ -11,11 +11,22 @@ export const createPost = async (payload: any) => {
 };
 
 export const updatePost = async (id: string, payload: any) => {
-  const { data } = await api.put(`/posts/${id}`, payload);
+  try {
+    const { data } = await api.patch(`/post/${id}`, payload);
+    return data;
+  } catch (error) {
+    console.error("Failed to update post:", error);
+    return null; 
+  }
+};
+
+
+export const deletePost = async (id: string) => {
+  const { data } = await api.delete(`/post/${id}`);
   return data;
 };
 
-export const deletePost = async (id: string) => {
-  const { data } = await api.delete(`/posts/${id}`);
+export const getSinglePost = async (id: string) => {
+  const { data } = await api.get(`/post/${id}`);
   return data;
 };

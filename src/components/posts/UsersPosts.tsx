@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { getAllPostsByUser, Post } from "@/services/post.server.service";
 import Image from "next/image";
 import { FiEdit, FiTrash2 } from "react-icons/fi"; // react-icons
+import Link from "next/link";
 
 const UsersPosts = () => {
     const [posts, setPosts] = useState<Post[]>([]);
@@ -18,10 +19,6 @@ const UsersPosts = () => {
         fetchPosts();
     }, []);
 
-    const handleEdit = (postId: string) => {
-        console.log("Edit post:", postId);
-        // redirect to edit page or open modal
-    };
 
     const handleDelete = (postId: string) => {
         console.log("Delete post:", postId);
@@ -39,12 +36,12 @@ const UsersPosts = () => {
                     >
                         {/* Edit/Delete Icons */}
                         <div className="absolute top-3 right-3 flex gap-2 z-10">
-                            <button
-                                onClick={() => handleEdit(post.id)}
+                            <Link
+                                href={`/my-posts/edit/${post.id}`}
                                 className="cursor-pointer text-blue-600 hover:text-blue-800 transition"
                             >
                                 <FiEdit size={20} />
-                            </button>
+                            </Link>
                             <button
                                 onClick={() => handleDelete(post.id)}
                                 className="cursor-pointer text-red-600 hover:text-red-800 transition"

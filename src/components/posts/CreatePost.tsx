@@ -5,49 +5,70 @@ import { FieldError, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { createPost } from "@/services/post.service";
+import { createPost, getSinglePost, updatePost } from "@/services/post.service";
 import { useAuth } from "@/providers/AuthProvider";
 import { useRouter } from "next/navigation";
 
 // Zod validation
-const PostSchema = z.object({
+const CreatePostSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters").max(100),
-  description: z
-    .string()
-    .min(10, "Description must be at least 10 characters")
-    .max(1000),
+  description: z.string().min(10, "Description must be at least 10 characters").max(1000),
   image: z
     .any()
     .refine((file) => file && file.length > 0, "Image is required")
-    .refine((file) => file?.[0]?.size <= 5_000_000, "Max file size 5MB"),
+    .refine((file) => file[0].size <= 5_000_000, "Max file size 5MB"),
 });
 
-type PostFormType = z.infer<typeof PostSchema>;
+// Optional for editing an existing post
+const EditPostSchema = z.object({
+  title: z.string().min(2, "Title must be at least 2 characters").max(100),
+  description: z.string().min(10, "Description must be at least 10 characters").max(1000),
+  image: z
+    .any()
+    .optional()
+});
 
-const CreatePost = () => {
+type PostFormType = z.infer<typeof CreatePostSchema> | z.infer<typeof EditPostSchema>;
+
+interface CreatePostProps {
+  postId?: string;
+}
+
+const CreatePost: React.FC<CreatePostProps> = ({ postId }) => {
   const { user } = useAuth();
   const router = useRouter();
   const [imageUrl, setImageUrl] = useState<string>("");
   const [preview, setPreview] = useState<string>("");
 
+  // Initialize form
   const {
     register,
     handleSubmit,
     formState: { errors },
     watch,
+    reset,
   } = useForm<PostFormType>({
-    resolver: zodResolver(PostSchema),
+    resolver: zodResolver(postId ? EditPostSchema : CreatePostSchema),
   });
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: createPost,
-    onSuccess: () => {
-      router.push("/"); // redirect to home
-    },
-    onError: (error) => {
-      console.error("Error creating post:", error);
-    },
-  });
+  // Fetch existing post if editing
+  useEffect(() => {
+    if (postId) {
+      getSinglePost(postId)
+        .then((data) => {
+          reset({
+            title: data.title,
+            description: data.description,
+            image: undefined,
+          });
+          setImageUrl(data.thumbnail);
+          setPreview(data.thumbnail);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch post for edit:", err);
+        });
+    }
+  }, [postId, reset]);
 
   // Watch image input for preview
   const imageFile = watch("image");
@@ -58,8 +79,6 @@ const CreatePost = () => {
       setPreview(objectUrl);
 
       return () => URL.revokeObjectURL(objectUrl);
-    } else {
-      setPreview("");
     }
   }, [imageFile]);
 
@@ -70,9 +89,7 @@ const CreatePost = () => {
 
     await fetch(url, {
       method: "PUT",
-      headers: {
-        "Content-Type": file.type,
-      },
+      headers: { "Content-Type": file.type },
       body: file,
     });
 
@@ -80,25 +97,50 @@ const CreatePost = () => {
     return publicUrl;
   };
 
+  // Mutation for create/update
+  const { mutate, isPending } = useMutation({
+    mutationFn: postId
+      ? (data: any) => updatePost(postId, data)
+      : (data: any) => createPost(data),
+    onSuccess: () => {
+      router.push("/my-posts");
+    },
+    onError: (error) => {
+      console.error("Error submitting post:", error);
+    },
+  });
+
+
+  // submit handler
+
   const onSubmit = async (data: PostFormType) => {
-    let uploadedImage = "";
+    let uploadedImage = imageUrl;
+
     if (data.image && data.image.length > 0) {
       uploadedImage = await uploadImageToS3(data.image[0]);
       setImageUrl(uploadedImage);
     }
 
-    mutate({
+    const payload: any = {
       title: data.title,
       description: data.description,
-      author: user.name,
-      authorId: user._id,
       thumbnail: uploadedImage,
-    });
+    };
+
+    if (!postId) {
+      payload.author = user.name;
+      payload.authorId = user._id;
+    }
+
+    mutate(payload);
   };
+
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md mt-5">
-      <h1 className="text-2xl font-bold mb-4">Create New Post</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        {postId ? "Edit Post" : "Create New Post"}
+      </h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Title */}
@@ -148,7 +190,7 @@ const CreatePost = () => {
                   d="M3 15a4 4 0 014-4h10a4 4 0 014 4v4a4 4 0 01-4 4H7a4 4 0 01-4-4v-4z"
                 />
               </svg>
-              <span>Click to upload an image</span>
+              <span>{postId ? "Change Image" : "Click to upload an image"}</span>
             </label>
             <input
               id="image"
@@ -172,7 +214,9 @@ const CreatePost = () => {
             </p>
           )}
 
-          {imageUrl && <p className="text-green-500 mt-1">Image uploaded!</p>}
+          {imageUrl && !imageFile?.length && (
+            <p className="text-green-500 mt-1">Current Image</p>
+          )}
         </div>
 
         {/* Submit */}
@@ -181,7 +225,7 @@ const CreatePost = () => {
           type="submit"
           className="bg-blue-600 cursor-pointer text-white px-6 py-2 rounded-md hover:bg-blue-700 transition"
         >
-          {isPending ? "Please Wait..." : "Publish Post"}
+          {postId ? "Update Post" : "Publish Post"} {isPending ? "Please Wait..." : ""}
         </button>
       </form>
     </div>

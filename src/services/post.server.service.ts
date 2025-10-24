@@ -19,7 +19,11 @@ export const getAllPosts = async (): Promise<Post[]> => {
     }
 
     const data = await res.json();
-    return data;
+    const posts: Post[] = data.map(({ _id, ...rest }: any) => ({
+      id: _id,
+      ...rest
+    }));
+    return posts;
   } catch (error) {
     console.error("Error fetching posts:", error);
     return [];
@@ -42,7 +46,11 @@ export const getAllPostsByUser = async (token: string): Promise<Post[]> => {
     }
 
     const data = await res.json();
-    return data;
+    const posts: Post[] = data.map(({ _id, ...rest }: any) => ({
+      id: _id,
+      ...rest
+    }));
+    return posts;
   } catch (error) {
     console.error("Error fetching posts:", error);
     return [];
