@@ -1,5 +1,5 @@
-import CreatePost from '@/components/posts/CreatePost'
-import UsersPosts from '@/components/posts/UsersPosts'
+import CreatePost from '@/app/(blog)/posts/CreatePost'
+import UsersPosts from '@/app/(blog)/posts/UsersPosts'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import React from 'react'
 

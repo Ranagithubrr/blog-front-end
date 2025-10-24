@@ -1,6 +1,6 @@
 "use client";
 
-import CreatePost from "@/components/posts/CreatePost";
+import CreatePost from "@/app/(blog)/posts/CreatePost";
 import { useParams } from "next/navigation";
 
 const EditPostPage = () => {
