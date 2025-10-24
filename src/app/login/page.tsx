@@ -27,15 +27,15 @@ export default function LoginPage() {
 
     const { mutate, isPending } = useMutation({
         mutationFn: loginUser,
-        onSuccess: (data: any) => {
+        onSuccess: (data) => {
             localStorage.setItem("token", data.access_token);
             localStorage.setItem("user", JSON.stringify(data.user));
 
             login(data.access_token, data.user);
             router.push("/");
         },
-        onError: (err: any) => {
-            const message = err?.response?.data?.message || err?.message || "Login failed";
+        onError: (err) => {
+            const message = err?.message || "Login failed";
             setErrorMessage(message);
         },
     });
