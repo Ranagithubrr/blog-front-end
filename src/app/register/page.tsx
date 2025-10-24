@@ -35,9 +35,8 @@ export default function RegisterPage() {
         onSuccess: () => {
             setSuccessMessage("Registration successful!");
         },
-        onError: (err: any) => {
-            const errorMessage =
-                err?.response?.data?.message || err?.message || "Registration failed. Try again.";
+        onError: (err) => {
+            const errorMessage = err?.message || "Registration failed. Try again.";
             setErrorMessage(errorMessage);
         },
     });

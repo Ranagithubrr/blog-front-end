@@ -2,6 +2,7 @@
 
 import { getSinglePost } from "@/services/post.service";
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import React from "react";
 
@@ -36,10 +37,12 @@ const PostPage = () => {
       </div>
 
       {/* Thumbnail */}
-      <img
+      <Image
         src={post.thumbnail}
         alt={post.title}
         className="w-full h-64 object-cover rounded-md mb-6"
+        width={640}
+        height={256}
       />
 
       {/* Description */}
