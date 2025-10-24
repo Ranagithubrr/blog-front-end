@@ -1,10 +1,17 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
+interface UserInterface {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
 interface AuthContextType {
   isLoggedIn: boolean;
-  user: any | null;
-  login: (token: string, user: any) => void;
+  user: UserInterface | null;
+  login: (token: string, user: UserInterface) => void;
   logout: () => void;
 }
 
@@ -12,7 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<UserInterface | null>(null);
 
   // Check localStorage for token on mount
   useEffect(() => {
@@ -32,7 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const login = (token: string, user: any) => {
+  const login = (token: string, user: UserInterface) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
     setUser(user);

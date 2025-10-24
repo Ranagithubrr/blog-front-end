@@ -46,8 +46,8 @@ interface CreatePayload {
 const CreatePost: React.FC<CreatePostProps> = ({ postId }) => {
   const { user } = useAuth();
   const router = useRouter();
-  const [imageUrl, setImageUrl] = useState<string>("");
-  const [preview, setPreview] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   // Initialize form
@@ -67,12 +67,13 @@ const CreatePost: React.FC<CreatePostProps> = ({ postId }) => {
       getSinglePost(postId)
         .then((data) => {
           reset({
-            title: data.title,
-            description: data.description,
+            title: data?.title,
+            description: data?.description,
             image: undefined,
           });
-          setImageUrl(data.thumbnail);
-          setPreview(data.thumbnail);
+          setImageUrl(data?.thumbnail ?? null);
+          setPreview(data?.thumbnail ?? null);
+
         })
         .catch((err) => {
           console.error("Failed to fetch post for edit:", err);
@@ -143,12 +144,12 @@ const CreatePost: React.FC<CreatePostProps> = ({ postId }) => {
     const payload: CreatePayload = {
       title: data.title,
       description: data.description,
-      thumbnail: encodeURI(uploadedImage),
+      thumbnail: encodeURI(uploadedImage ?? ""),
     };
 
     if (!postId) {
-      payload.author = user.name;
-      payload.authorId = user._id;
+      payload.author = user?.name;
+      payload.authorId = user?.id;
     }
 
     mutate(payload);
