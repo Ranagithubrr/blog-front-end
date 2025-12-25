@@ -12,10 +12,10 @@ interface FormDataType {
 
 const Page = () => {
   const initialValues: FormDataType = {
-    name: '',
-    email: '',
-    phone: '',
-    password: ''
+    name: 'Rana RR',
+    email: 'hello@gmail.com',
+    phone: '98293829',
+    password: 'Hello@123Gmail'
   }
 
   const validationSchema = Yup.object({
