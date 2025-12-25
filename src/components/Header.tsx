@@ -25,6 +25,7 @@ const Header = () => {
             <Link href="/my-posts" className="hover:text-blue-600 transition">My Posts</Link>
           }
           <Link href="/about" className="hover:text-blue-600 transition">About</Link>
+          <Link href="/form" className="hover:text-blue-600 transition">Form</Link>
         </nav>
 
         {/* Login button */}
